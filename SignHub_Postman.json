@@ -1,0 +1,464 @@
+{
+	"info": {
+		"_postman_id": "2c1a0ce5-def3-4731-a485-df7d7d95fd01",
+		"name": "External API",
+		"description": "Test1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14340467"
+	},
+	"item": [
+		{
+			"name": "ApiCreateFlow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"success\",function(){\r",
+							"    let responseData = pm.response.json();\r",
+							"    pm.globals.set(\"flowId2\", responseData.result.flowId);\r",
+							"    pm.globals.set(\"flowItemId1\", responseData.result.flowItems[0].flowItemId);\r",
+							"    pm.globals.set(\"flowItemId2\", responseData.result.flowItems[1].flowItemId);\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "{{apiKey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"loginSessionId\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"subject\": \"Deneme Bir 000011\",\r\n    \"signatureType\": 0,\r\n    \"requestId\": \"K_rVOmAzxY5or18IvD5UX\",\r\n    \"displayLanguage\": \"en\",\r\n    \"flowItems\": [\r\n        {\r\n            \"fullname\": \"Uluç Efe Öztürk\",\r\n            \"eMail\": \"\",\r\n            \"citizenshipNo\": \"\",\r\n            \"orderNo\": 1,\r\n            \"groupNo\": 1,\r\n            \"flowItemType\": 0,\r\n            \"flowItemGroupAuthorityType\": 0,\r\n            \"byPassOtpForExternalUser\": true\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/flow/ApiCreateFlow",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"flow",
+						"ApiCreateFlow"
+					],
+					"query": [
+						{
+							"key": "X-API-KEY",
+							"value": "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Yeni bir süreç oluşturmak için kullanılır.\n\n# Request\n\n**loginSessionId** Tüm isteklerde boş GUID değeri gönderilir.\n\n**subject** Sürecin konusudur. Uygulama arayüzünde, son kullanıcı imza atarken imza portalinde ve kişilere atılan e-postalarda bu ifade gösterilir.\n\n**signatureType** Atılacak imza türüdür.\n\n``` csharp\npublic enum SignatureTypeEnum\n{\n    [Description(\"PAdES\")]\n    Pades = 0,\n    [Description(\"CAdES\")]\n    Cades = 1,\n    [Description(\"e-Yazışma\")]\n    eYazisma = 2,\n}\n\n ```\n\n**requestId** Her bir istek için yeni \"random\" bir ifade gönderilir. 21 karakter uzunluğunda alfanumerik bir ifade olmalıdır. Bu değer sistem tarafından loglama amaçlı kullanılır.\n\n**displayLanguage** Yapılan isteğin dili gönderilir. Türkçe için **tr**, ingilizce için **en** değeri gönderilmelidir. Dönen hata mesajları yapılan isteğin diline göre Türkçe ve İngilizce olur. Bu sayede son kullanıcıların kullandığı dile uygun hata mesajları gösterilebilir.\n\n**flowItems** Süreçteki belgeye işlem yapacak kişiler listedir.\n\n**flowItem.fullname** Belgeye işlem yapacak kişinin adı ve soyadıdır.\n\n**flowItem.eMail** Belgeye işlem yapacak kişinin e-posta adresidir. Kişiye e-posta gitmesini istemiyorsanız, bu alanı boş bırakabilirsiniz.\n\n**flowItem.citizenshipNo** Belgeye işlem yapacak kişinin vatandaşlık numarasıdır. Opsiyoneldir. İmza atan kişinin e-imza sertifikasındaki vatantaşlık numarası ile kontrol yapılmasını sağlar.\n\n**flowItem.orderNo** İşlem yapacak kişinin hangi sırada olduğunu belirler. Minimum değer 1'dir.\n\n**flowItem.groupNo** İşlem yapacak kişinin hangi grupta olduğunu belirler. Minimum değer 1'dir. Bu alan, gelişmiş süreçler yani paralel ve sıralı akışlar birlikte kullanıldığında kullanılmalıdır.\n\n**flowItem.flowItemType** İşlem yapacak kişin işlem türünü belirler. Onay ve İzleme sadece gelişmiş süreçlerde kullanılabilir.\n\n**flowItem.byPassOtpForExternalUsers** İşlem yapacak kişi imza işlemi için URL'yi açtığında, OTP kontrolü yapmadan doğrudan belgeyi görmesi için kullanılır.\n\n``` csharp\npublic enum FlowItemTypeEnum\n{\n    [Description(\"İmza\")]\n    eSignature = 0,\n    [Description(\"Onay\")]\n    Approve = 1,\n    [Description(\"İzleme\")]\n    Viewer =2\n}\n\n ```\n\nflowItem.flowItemGroupAuthorityType İşlem yapacak kişinin yetki türünü belirler. Tam Yetkili ve Kısmi Yetkili sadece gelişmiş süreçlerde kullanılabilir.\n\n``` csharp\npublic enum FlowItemGroupAuthorityTypeEnum\n{\n    [Description(\"Normal\")]\n    None = 0,\n    // Tek başına işlem yapması bir sonraki aşamaya geçirir.\n    [Description(\"Tam Yetkili\")]\n    Authority = 1,\n    // Diğer SharedAuthority'lerle beraber işlem yapması bir sonraki aşamaya geçirir.\n    [Description(\"Kısmi Yetkili\")]\n    SharedAuthority = 2,\n}\n\n ```\n\n# Response\n\n**flowId** Sistemde yaratılan sürecin tekil değeridir. Daha sonraki isteklerde bu değer kullanılmalıdır.\n\n**flowItems** Sistemde yaratılan sürece işlem yapacak kişilerin sistemdeki bilgileridir.\n\n**flowItem.orderNo** İşlem yapacak kişinin hangi sırada olduğunu belirler. Minimum değer 1'dir.\n\n**flowItem.eMail** Belgeye işlem yapacak kişinin e-posta adresidir.\n\n**flowItem.flowItemId** Bu kayıdın sistemdeki tekil değeridir. Daha sonraki isteklerde bu değer kullanılmalıdır.\n\n**error:** Bir hata oluşması durumunda hataya ilişkin bilgiyi içerir.\n\n``` json\n{\n    \"result\": {\n        \"flowId\": 1924,\n        \"flowItems\": [\n            {\n                \"orderNo\": 1,\n                \"eMail\": \"efeo@seneka.com.tr\",\n                \"flowItemId\": 3962\n            },\n            {\n                \"orderNo\": 2,\n                \"eMail\": \"bengi.oguz@seneka.com.tr\",\n                \"flowItemId\": 3963\n            }\n        ]\n    },\n    \"error\": null\n}\n\n ```"
+			},
+			"response": []
+		},
+		{
+			"name": "ApiAddFileToFlow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"success\",function(){\r",
+							"    let responseData = pm.response.json();\r",
+							"    pm.globals.set(\"pageId1\", responseData.result.pages[0].id);\r",
+							"    pm.globals.set(\"pageId2\", responseData.result.pages[1].id);\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "{{apiKey}}",
+						"type": "text"
+					},
+					{
+						"key": "flowid",
+						"value": "{{flowId2}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/ulucefe/Downloads/Deneme Bir 000012 (imzal_)2.pdf"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseURL}}/flow/ApiAddFileToFlow",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"flow",
+						"ApiAddFileToFlow"
+					]
+				},
+				"description": "Süreçte imzalanacak belgelerin sisteme eklenmesini sağlar.\n\nPdf, docx, doc, xls, xlsx, ppt, pptx, jpeg, jpg, png, gif, tiff, tifs formatında belgeler gönderilebilir. Sistem bu belgeler otomatik olarak Pdf'e dönüştürecektir. Birde fazla belge gönderilmesi durumunda sistem Pdf'e dönüştürdüğü belgeleri birleştirerek tek bir Pdf yapacaktır.\n\n**Header.flowId** Hangi sürece belge eklenmek isteniyorsa header'da flowId parametresi ile ilgili sürecin tekil değeri gönderilir.\n\n# Response\n\n``` json\n{\n    \"result\": {\n        \"orderNo\": 1,\n        \"pageCount\": 4,\n        \"flowDocumentId\": 1319,\n        \"flowDocumentEYazismaAttachmentId\": null,\n        \"flowNoteAttachmentFileName\": null,\n        \"addedRecordId\": 0,\n        \"pages\": [\n            {\n                \"height\": 1122,\n                \"id\": 15379,\n                \"pageNo\": 1,\n                \"pdfHeightInPoints\": 842,\n                \"pdfWidthInPoints\": 596,\n                \"width\": 794\n            },\n            {\n                \"height\": 1122,\n                \"id\": 15380,\n                \"pageNo\": 2,\n                \"pdfHeightInPoints\": 842,\n                \"pdfWidthInPoints\": 596,\n                \"width\": 794\n            },\n            {\n                \"height\": 1122,\n                \"id\": 15381,\n                \"pageNo\": 3,\n                \"pdfHeightInPoints\": 842,\n                \"pdfWidthInPoints\": 596,\n                \"width\": 794\n            },\n            {\n                \"height\": 1122,\n                \"id\": 15382,\n                \"pageNo\": 4,\n                \"pdfHeightInPoints\": 842,\n                \"pdfWidthInPoints\": 596,\n                \"width\": 794\n            }\n        ]\n    },\n    \"error\": null\n}\n\n```\n\n**orderNo** Yüklenen dosyanın sıra numarasıdır.\n\n**pageCount** Yüklenen dosyanın pdf'e dönüştürüldüğünde kaç sayfadan oluştuğu bilgisidir.\n\n**flowDocumentId** Yüklenen dosyanın sistemdeki tekil değeridir.\n\n**flowDocumentEYazismaAttachmentId** gelecekte kullanılmak üzere eklenmiştir.\n\n**flowNoteAttachmentFileName** gelecekte kullanılmak üzere eklenmiştir.\n\n**addedRecordId** gelecekte kullanılmak üzere eklenmiştir.\n\n**pages** Yüklenen belgeler ilişkin bilgileri içerir.\n\n**page.id** Yüklenen belgenin ilgili sayfasının sistemdeki tekil değeri.\n\n**page.pageNo** Yüklenen belgenin ilgili sayfasının sayfa numarasıdır. Sayfa numaraları 1'den başlar.\n\n**page.height** Sistem tarafından kullanılan bir değerdir. API kullanımında dikkate alınmasına gerek yoktur.\n\n**page.width** Sistem tarafından kullanılan bir değerdir. API kullanımında dikkate alınmasına gerek yoktur.\n\n**page.pdfHeightInPoints** Yüklenen belgenin ilgili sayfasının yüksekliğidir.\n\n**page.pdfWidthInPoints** Yüklenen belgenin ilgili sayfasının genişliğidir."
+			},
+			"response": []
+		},
+		{
+			"name": "ApiAddPdfAttachmentToFlow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "{{apiKey}}",
+						"type": "text"
+					},
+					{
+						"key": "flowid",
+						"value": "{{flowId2}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/ulucefe/Downloads/dosya (8).pdf"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseURL}}/flow/ApiAddPdfAttachmentToFlow",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"flow",
+						"ApiAddPdfAttachmentToFlow"
+					]
+				},
+				"description": "Süreçte imzalanacak belgelerin sisteme eklenmesini sağlar.\n\nPdf, docx, doc, xls, xlsx, ppt, pptx, jpeg, jpg, png, gif, tiff, tifs formatında belgeler gönderilebilir. Sistem bu belgeler otomatik olarak Pdf'e dönüştürecektir. Birde fazla belge gönderilmesi durumunda sistem Pdf'e dönüştürdüğü belgeleri birleştirerek tek bir Pdf yapacaktır.\n\n**Header.flowId** Hangi sürece belge eklenmek isteniyorsa header'da flowId parametresi ile ilgili sürecin tekil değeri gönderilir.\n\n# Response\n\n``` json\n{\n    \"result\": {\n        \"orderNo\": 1,\n        \"pageCount\": 4,\n        \"flowDocumentId\": 1319,\n        \"flowDocumentEYazismaAttachmentId\": null,\n        \"flowNoteAttachmentFileName\": null,\n        \"addedRecordId\": 0,\n        \"pages\": [\n            {\n                \"height\": 1122,\n                \"id\": 15379,\n                \"pageNo\": 1,\n                \"pdfHeightInPoints\": 842,\n                \"pdfWidthInPoints\": 596,\n                \"width\": 794\n            },\n            {\n                \"height\": 1122,\n                \"id\": 15380,\n                \"pageNo\": 2,\n                \"pdfHeightInPoints\": 842,\n                \"pdfWidthInPoints\": 596,\n                \"width\": 794\n            },\n            {\n                \"height\": 1122,\n                \"id\": 15381,\n                \"pageNo\": 3,\n                \"pdfHeightInPoints\": 842,\n                \"pdfWidthInPoints\": 596,\n                \"width\": 794\n            },\n            {\n                \"height\": 1122,\n                \"id\": 15382,\n                \"pageNo\": 4,\n                \"pdfHeightInPoints\": 842,\n                \"pdfWidthInPoints\": 596,\n                \"width\": 794\n            }\n        ]\n    },\n    \"error\": null\n}\n\n```\n\n**orderNo** Yüklenen dosyanın sıra numarasıdır.\n\n**pageCount** Yüklenen dosyanın pdf'e dönüştürüldüğünde kaç sayfadan oluştuğu bilgisidir.\n\n**flowDocumentId** Yüklenen dosyanın sistemdeki tekil değeridir.\n\n**flowDocumentEYazismaAttachmentId** gelecekte kullanılmak üzere eklenmiştir.\n\n**flowNoteAttachmentFileName** gelecekte kullanılmak üzere eklenmiştir.\n\n**addedRecordId** gelecekte kullanılmak üzere eklenmiştir.\n\n**pages** Yüklenen belgeler ilişkin bilgileri içerir.\n\n**page.id** Yüklenen belgenin ilgili sayfasının sistemdeki tekil değeri.\n\n**page.pageNo** Yüklenen belgenin ilgili sayfasının sayfa numarasıdır. Sayfa numaraları 1'den başlar.\n\n**page.height** Sistem tarafından kullanılan bir değerdir. API kullanımında dikkate alınmasına gerek yoktur.\n\n**page.width** Sistem tarafından kullanılan bir değerdir. API kullanımında dikkate alınmasına gerek yoktur.\n\n**page.pdfHeightInPoints** Yüklenen belgenin ilgili sayfasının yüksekliğidir.\n\n**page.pdfWidthInPoints** Yüklenen belgenin ilgili sayfasının genişliğidir."
+			},
+			"response": []
+		},
+		{
+			"name": "ApiSetFields",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "{{apiKey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"loginSessionId\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"flowId\": {{flowId2}},\r\n    \"requestId\": \"K_rVOmAzxY5or18IvD5UX\",\r\n    \"displayLanguage\": \"en\",\r\n    \"signatures\": [\r\n        {\r\n            \"x\": 150,\r\n            \"y\": 225,\r\n            \"pageId\": {{pageId1}},\r\n            \"flowItemId\": {{flowItemId1}}\r\n        }\r\n    ],\r\n    \"qrCodeLeft\":\"\",\r\n    \"qrCodeRight\":\"4%\",\r\n    \"qrCodeTop\":\"4%\",\r\n    \"qrCodeBottom\":\"\",\r\n    \"qrCodeTransformOrigin\":\"right top\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/flow/ApiSetFields",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"flow",
+						"ApiSetFields"
+					],
+					"query": [
+						{
+							"key": "X-API-KEY",
+							"value": "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3",
+							"disabled": true
+						}
+					]
+				},
+				"description": "PAdES imza türünde imzacıların imza görsellerinin nerede bulunacağını belirlemek için kullanılır.\n\n**loginSessionId** Tüm isteklerde boş GUID değeri gönderilir.\n\n**flowId** Hangi süreç için işlem yapılacaksa ilgil sürecin tekil değeri gönderilir.\n\n**requestId** Her bir istek için yeni \"random\" bir ifade gönderilir. 21 karakter uzunluğunda alfanumerik bir ifade olmalıdır. Bu değer sistem tarafından loglama amaçlı kullanılır.\n\n**displayLanguage** Yapılan isteğin dili gönderilir. Türkçe için **tr**, ingilizce için **en** değeri gönderilmelidir. Dönen hata mesajları yapılan isteğin diline göre Türkçe ve İngilizce olur. Bu sayede son kullanıcıların kullandığı dile uygun hata mesajları gösterilebilir.\n\n**signatures** İmza alanlarının bilgilerini içeren listedir.\n\n**signature.x** İmza alanın sayfadaki yatay lokasyonunu belirler. Şekil 1'deki açıklamalara bakınız.\n\n**signature.y** İmza alanın sayfadaki dikeylokasyonunu belirler. Şekil 1'deki açıklamalara bakınız.\n\n**signature.pageId** `ApiAddFileToFlow` metodundan dönen `pageId` parametresi kullanılarak hangi sayfaya imza alanının konulacağı belirlenir.\n\n**signature.flowItemId** `ApiCreateFlow` metodundan dönen `flowItemId` parametresi kullanılarak hangi imzacı için imza alanı konulacağı belirlenir.\n\n<img src=\"https://content.pstmn.io/1f85d697-f33b-479e-b68d-8eb7ee66f575/aW1hZ2UucG5n\" alt=\"Şekil%201\" width=\"398\" height=\"478\">\n\nA `ApiAddFileToFlow` metodundan dönen `pdfWithInPoints`'dir. Sayfanın genişliğidir.\n\nB `ApiAddFileToFlow` metodundan dönen `pdfHeightInPoints`'dir. Sayfanın yüksekliğidir.\n\nX İmza alanının sayfanın solundan olan uzaklığıdır. `signature.x` değeri hesaplanırken **X/A\\*3** formülü kullanılır.\n\nY İmza alanının sayfanın üstünden olan uzaklığıdır. `signature.y` değeri hesaplanırken **Y/B\\*3** formülü kullanılır.\n\n# Response\n\n``` json\n{\n    \"result\": {\n        \"myProperty\": 0\n    },\n    \"error\": null\n}\n\n```\n\n**myProperty** İlerde kullanım için eklenmiştir.\n\n**error** Bir hata olması durumunda hataya ilişkin bilgi döner."
+			},
+			"response": []
+		},
+		{
+			"name": "ApiStartFlow",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "{{apiKey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"loginSessionId\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"requestId\": \"21N_zF0kr-tbw3PaRBUK0\",\r\n    \"displayLanguage\": \"tr\",\r\n    \"flowId\": {{flowId2}},\r\n    \"flowSubject\": \"\",\r\n    \"note\": \"11111 2222\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/flow/ApiStartFlow",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"flow",
+						"ApiStartFlow"
+					],
+					"query": [
+						{
+							"key": "X-API-KEY",
+							"value": "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3",
+							"disabled": true
+						}
+					]
+				},
+				"description": "# Request\n\n**loginSessionId** Tüm isteklerde boş GUID değeri gönderilir.\n\n**requestId** Her bir istek için yeni \"random\" bir ifade gönderilir. 21 karakter uzunluğunda alfanumerik bir ifade olmalıdır. Bu değer sistem tarafından loglama amaçlı kullanılır.\n\n**displayLanguage** Yapılan isteğin dili gönderilir. Türkçe için **tr**, ingilizce için **en** değeri gönderilmelidir. Dönen hata mesajları yapılan isteğin diline göre Türkçe ve İngilizce olur. Bu sayede son kullanıcıların kullandığı dile uygun hata mesajları gösterilebilir.\n\n**flowId** Başlatılmak istenen sürecin tekil değeridir.\n\n**flowSubject** Süreç başlatılmadan önce süreç konusu değiştirilmek istenirse bu alana ilgili değer girilir. Boş değer verilmesi durumunda `ApiCreateFlow` aşamasında verilmiş olan değer kullanılır.\n\n**note** İmza atacak kişilere gönderilecek e-postada yazılması istenen not varsa bu alan girilir.\n\n# Response\n\n``` json\n{\n    \"result\": {\n        \"startFlowError\": null,\n        \"isOk\": true,\n        \"firstSignerIsSelf\": false,\n        \"signingPortalUrl\": null,\n        \"token\": null,\n        \"postmarkErrors\": null,\n        \"jwtShortCode\": null,\n        \"lastUpdatedDate\": \"2023-02-20T14:05:40.3292616+03:00\",\n        \"appUrl\": null,\n        \"urlForFirstSigner\":\"http://localhost:8081/2b594fdb-600b-4229-b92c-0688aaf2c80ccd24f3d6-b463-4c50-9c9b-4384e3e57b2a\"\n    },\n    \"error\": null\n}\n\n ```\n\n**isOK** `true` olması durumunda süreç başarıyla başlatılmış olur.\n\n**urlForFirstSigner** ilk imza atacak kişinin, imza atması için gitmesi gereken web sayfasının adresidir."
+			},
+			"response": []
+		},
+		{
+			"name": "ApiGetFlowStatus",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "{{apiKey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"loginSessionId\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"flowId\":{{flowId2}},\r\n    \"requestId\": \"K_rVOmAzxY5or18IvD5UX\",\r\n    \"displayLanguage\": \"en\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/flow/ApiGetFlowStatus",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"flow",
+						"ApiGetFlowStatus"
+					],
+					"query": [
+						{
+							"key": "X-API-KEY",
+							"value": "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3",
+							"disabled": true
+						}
+					]
+				},
+				"description": "# Request\n\n**loginSessionId** Tüm isteklerde boş GUID değeri gönderilir.\n\n**requestId** Her bir istek için yeni \"random\" bir ifade gönderilir. 21 karakter uzunluğunda alfanumerik bir ifade olmalıdır. Bu değer sistem tarafından loglama amaçlı kullanılır.\n\n**displayLanguage** Yapılan isteğin dili gönderilir. Türkçe için **tr**, ingilizce için **en** değeri gönderilmelidir. Dönen hata mesajları yapılan isteğin diline göre Türkçe ve İngilizce olur. Bu sayede son kullanıcıların kullandığı dile uygun hata mesajları gösterilebilir.\n\n**flowId** Sorgulanmak istenen sürecin tekil değeridir.\n\n# Response\n\n**flowId** Sorgulanan sürecin tekil değeridir.\n\n**flowType** Sürecin temel ve gelişmiş süreç olup olmadığı bilgisini döner.\n\n``` csharp\n    public enum FlowTypeEnum\n    {\n        [Description(\"Temel\")]\n        Basic = 1,\n        [Description(\"Gelişmiş\")]\n        Advanced = 2,\n    }\n\n```\n\n**status** Sürecin durumunu döner.\n\n``` csharp\n    public enum FlowStatusEnum\n    {\n        [Description(\"Oluşturuldu\")]\n        Created = 1,\n        [Description(\"Taslak\")]\n        Draft = 2,\n        [Description(\"Akışta\")]\n        Running = 3,\n        [Description(\"e-İmzalı\")]\n        Finished = 4,\n        [Description(\"İptal\")]\n        Cancelled = 5,\n        [Description(\"Reddedildi\")]\n        FinishedWithDecline = 6\n    }\n}   \n\n```\n\n**statusString** Sürecin durumunun, request'te gönderilen dil parametresine göre açıklamasını döner.\n\n**flowItems** Süreçte bulunan işlem yapacak kullanıcıların durumlarını döner.\n\n**flowItem.id** Bu kayıdın sistemdeki tekil değeridir.\n\n**flowItem.eMail** Belgeye işlem yapacak kişinin e-posta adresidir.\n\n**flowItem.fullname** Belgeye işlem yapacak kişinin adı ve soyadıdır.\n\n**flowItem.orderNo** İşlem yapacak kişinin hangi sırada olduğunu belirler. Minimum değer 1'dir.\n\n**flowItem.status** İşlemin durumudur.\n\n``` csharp\n    public enum FlowItemStatusEnum\n    {\n        [Description(\"İşlem Yapılmamış\")]\n        Default = 1,\n        [Description(\"İşlem Bekleniyor\")]\n        Waiting = 10,\n        [Description(\"Portal Açıldı\")]\n        OpenedPortal = 20,\n        [Description(\"Belge Okundu\")]\n        ReadDocument = 30,\n        [Description(\"Tamamlandı\")]\n        Finished = 40,\n        [Description(\"Red Edildi\")]\n        Declined = 50,\n        [Description(\"İşleme Gerek Kalmadı\")]\n        Passed = 60,\n    }\n\n```\n\n**flowItem.statusString** İşlemin durumunun request'te gönderilen dil parametresine göre açıklamasıdır.\n\n**flowItem.sendDate** Kişiye gönderilme tarihidir. Henüz kişiye gönderilmemiş ise null döner.\n\n**flowItem.sendDateString** Kişiye gönderilme tarihinin request'te gönderilen dil parametresine göre okunabilir formattaki halidir.\n\n**flowItem.signedDate** Kişinin işlem yapma tarihidir. Henüz işlem yapılmamış ise null döner.\n\n**flowItem.signedDateString** Kişinin işlem yapma tarihinin request'te gönderilen dil parametresine göre okunabilir formattaki halidir.\n\n**flowItem.waitDurationString** Yok sayınız.\n\n**flowItem.groupNo** İşlem yapacak kişinin hangi grupta olduğunu bilgisidir.\n\n**flowItem.groupAuthorityType** İşlem yapacak kişinin yetki türüdür.\n\n``` csharp\n    public enum FlowItemGroupAuthorityTypeEnum\n    {\n        [Description(\"Normal\")]\n        None = 0,\n        // Tek başına işlem yapması bir sonraki aşamaya geçirir.\n        [Description(\"Tam Yetkili\")]\n        Authority = 1,\n        // Diğer SharedAuthority'lerle beraber işlem yapması bir sonraki aşamaya geçirir.\n        [Description(\"Kısmi Yetkili\")]\n        SharedAuthority = 2,\n    }\n\n```\n\n**flowItem.groupAuthorityTypeString** İşlem yapacak kişinin yetki türünün request'te gönderilen dil parametresine göre okunabilir formattaki halidir.\n\n**flowItem.flowItemType** İşlem yapacak kişin işlem türüdür.\n\n``` csharp\n    public enum FlowItemTypeEnum\n    {\n        [Description(\"İmza\")]\n        eSignature = 0,\n        [Description(\"Onay\")]\n        Approve = 1,\n        [Description(\"İzleme\")]\n        Viewer =2\n    }\n\n```\n\n**flowItem.flowItemTypeString** İşlem yapacak kişin işlem türünün request'te gönderilen dil parametresine göre okunabilir formattaki halidir.\n\n**flowItem.isMobileSign** İmza işlemi mobil imza ile yapılmış ise `True` döner.\n\n**error** Bir hata oluşması durumunda hataya ilişkin bilgiyi içerir."
+			},
+			"response": []
+		},
+		{
+			"name": "ApiCancelFlow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "{{apiKey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"loginSessionId\": \"00000000-0000-0000-0000-000000000000\",\r\n    \"flowId\":{{flowId2}},\r\n    \"requestId\": \"K_rVOmAzxY5or18IvD5UX\",\r\n    \"displayLanguage\": \"en\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/flow/ApiCancelFlow",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"flow",
+						"ApiCancelFlow"
+					],
+					"query": [
+						{
+							"key": "X-API-KEY",
+							"value": "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3",
+							"disabled": true
+						}
+					]
+				},
+				"description": "StartFragment\n\n# Request\n\n**loginSessionId** Tüm isteklerde boş GUID değeri gönderilir.\n\n**requestId** Her bir istek için yeni \"random\" bir ifade gönderilir. 21 karakter uzunluğunda alfanumerik bir ifade olmalıdır. Bu değer sistem tarafından loglama amaçlı kullanılır.\n\n**displayLanguage** Yapılan isteğin dili gönderilir. Türkçe için **tr**, ingilizce için **en** değeri gönderilmelidir. Dönen hata mesajları yapılan isteğin diline göre Türkçe ve İngilizce olur. Bu sayede son kullanıcıların kullandığı dile uygun hata mesajları gösterilebilir.\n\n**flowId** İptal istenen sürecin tekil değeridir.\n\n# Response\n\n**warnings** Sürecin iptal edilmesine engel olmayan ancak uyarı niteliğinde bilgi var ise onu dönen alandır.\n\n**newStatus** Sürecin yeni durumudur.\n\n``` csharp\n    public enum FlowStatusEnum\n    {\n        [Description(\"Oluşturuldu\")]\n        Created = 1,\n        [Description(\"Taslak\")]\n        Draft = 2,\n        [Description(\"Akışta\")]\n        Running = 3,\n        [Description(\"e-İmzalı\")]\n        Finished = 4,\n        [Description(\"İptal\")]\n        Cancelled = 5,\n        [Description(\"Reddedildi\")]\n        FinishedWithDecline = 6\n    }\n\n```\n\n**newStatusString** Sürecin yeni durumunun request'te gönderilen dil parametresine göre açıklamasını döner.\n\n**flowId** Sürecin sistemdeki tekil değeridir.\n\n**lastUpdatedDateString** İşlem tarihinin request'te gönderilen dil parametresine göre okunabilir formattaki halidir.\n\n**error** Bir hata oluşması durumunda hataya ilişkin bilgiyi içerir.\n\nEndFragment"
+			},
+			"response": []
+		},
+		{
+			"name": "ApiDownloadSignedPdf",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "{{apiKey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "{{baseURL}}/flow/ApiDownloadSignedPdf?requestId=K_rVOmAzxY5or18IvD5UX&loginSessionId=00000000-0000-0000-0000-000000000000&flowId={{flowId2}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"flow",
+						"ApiDownloadSignedPdf"
+					],
+					"query": [
+						{
+							"key": "requestId",
+							"value": "K_rVOmAzxY5or18IvD5UX"
+						},
+						{
+							"key": "loginSessionId",
+							"value": "00000000-0000-0000-0000-000000000000"
+						},
+						{
+							"key": "flowId",
+							"value": "{{flowId2}}"
+						}
+					]
+				},
+				"description": "Tamamlanmış bir sürece ait e-imzalı belge verisini indirmek için kullanılır.\n\n# Request\n\n**QueryParameter.requestId** Her bir istek için yeni \"random\" bir ifade gönderilir. 21 karakter uzunluğunda alfanumerik bir ifade olmalıdır. Bu değer sistem tarafından loglama amaçlı kullanılır.\n\n**QueryParameter.loginSessionId** Tüm isteklerde boş GUID değeri gönderilir.\n\n**QueryParameter.flowId** İndirilmek istenen sürecin tekil değeridir.\n\n# Response\n\nSüreç bulunamaması durumunda HTTP 400 döner.\n\nAksi durumda imzalı belge verisini döner."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "https://localhost:44337",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "CD6D9AF4CCE44883B40E344DA57D386FB107CD579CF748829A7DC38B8B227D2B",
+			"type": "string"
+		}
+	]
+}
